@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/css/ol.css"
+        type="text/css">
+    <style>
+        .map {
+        height: 400px;
+        width: 100%;
+      }
+    </style>
+    <script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.3.0/build/ol.js"></script>
+    <title>OpenLayers example</title>
+</head>
+
+<body>
+    <h2>My Map</h2>
+    <div id="map" class="map"></div>
+    <script type="text/javascript">
+        // import Map from './src/ol/Map.js';
+        // import View from './src/ol/View.js';
+        // import Draw from './src/ol/interaction/Draw.js';
+        // import { Tile as TileLayer, Vector as VectorLayer } from './src/ol/layer.js';
+        // import { OSM, Vector as VectorSource } from './src/ol/source.js';
+        var map = new ol.Map({
+            target: 'map',
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM()
+                })
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat([113.331575, 23.143232]),//地图中心点
+                zoom: 4
+            })
+        });
+        map.addControl(new ol.control.FullScreen())
+        //             **
+        //  * 画点
+        //             * /
+        var drawPoint = function () {
+            sMap.removeInteraction(modify);
+            sMap.removeInteraction(draw);
+            var featureLayer = getFeatureLayer();
+            var style = new ol.style.Style({
+                image: new ol.style.Icon({
+                    src:  './img/anchor.png',
+                    anchor: [0.5, 0.9]
+                })
+            });
+            draw = new ol.interaction.Draw({
+                source: featureLayer.getSource(),
+                type: "Point",//画的要素类型
+                style: style
+            });
+            draw.on('drawend', function (event) {
+                var feature = event.feature;
+                console.log(event.feature.getGeometry().flatCoordinates);
+                coordinatesArr.push(event.feature.getGeometry().flatCoordinates);
+                //  console.log(coordinatesArr);
+                feature.setStyle(style);
+                sMap.removeInteraction(draw);
+            });
+            sMap.addInteraction(draw);
+        }
+        //创建一个vector的layer来放置图标
+        var layer = new ol.layer.Vector({
+            source: new ol.source.Vector()
+        })
+
+        drawPoint()
+
+
+        //创建一个Feature，并设置好在地图上的位置
+        var anchor = new ol.Feature({
+            geometry: new ol.geom.Point([113.331575, 23.143232])
+        });
+        //设置样式，在样式中就可以设置图标
+        anchor.setStyle(new ol.style.Style({
+            image: new ol.style.Icon({
+                src: './img/anchor.png'
+            })
+        }));
+        //添加到之前的创建的layer中去
+        layer.getSource().addFeature(anchor);
+
+    </script>
+</body>
+
+</html>
